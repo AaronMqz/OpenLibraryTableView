@@ -45,6 +45,8 @@ class Datos {
             
             if let nombreTitulo = datos["title"] as? String{
                 self.libro.titulo  = nombreTitulo
+            }else{
+                self.libro.titulo = "Sin Título"
             }
             
             if let nombreAutores = datos["authors"] as? NSArray{
@@ -58,12 +60,16 @@ class Datos {
                     }
                     ++index
                 }
+            }else{
+                self.libro.autores = "Sin Autores"
             }
             
             if let imagen = datos["cover"] as? NSDictionary{
                     let url = NSURL(string: imagen["large"] as! String)
                     let data = NSData(contentsOfURL: url!)
                     self.libro.portada = UIImage(data: data!)!
+            }else{
+                 self.libro.portada = UIImage(named: "sin imagen")
             }
             
         }

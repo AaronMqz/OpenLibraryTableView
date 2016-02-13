@@ -19,19 +19,10 @@ class ControladorDetalleLibro: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        
         isbn.text = libroDetalle.isbn
         titulo.text = libroDetalle.titulo
         autores.text = libroDetalle.autores
         portada.image = libroDetalle.portada
-        
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
-
 }

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class ControladorBuscarLibro: UIViewController {
 
@@ -21,15 +22,11 @@ class ControladorBuscarLibro: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-       
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
 
     @IBAction func isbnBuscar(sender: UITextField) {
         isbnGlobal = sender.text!
@@ -45,11 +42,7 @@ class ControladorBuscarLibro: UIViewController {
                         }else{
                             self.titulo.text = callback.titulo
                             self.autor.text = callback.autores
-                            if callback.portada != nil {
-                                self.portada.image = callback.portada
-                            }else{
-                                self.portada.image = UIImage(named: "sin imagen")
-                            }
+                            self.portada.image = callback.portada
                             self.libro = Libro()
                             self.libro.titulo = self.titulo.text!
                             self.libro.isbn = self.isbn.text!
@@ -64,18 +57,31 @@ class ControladorBuscarLibro: UIViewController {
         super.willMoveToParentViewController(parent)
     
         if parent == nil{
-            
             if libros == nil{
                 if libro != nil{
                     libros = [libro];
                 }
             }else{
                 libros.append(self.libro)
+
             }
-            
+            insertarDatos()
         }
     }
     
+    
+    func insertarDatos(){
+        let nuevoLibro = NSEntityDescription.insertNewObjectForEntityForName("Libro", inManagedObjectContext: contexto!)
+        nuevoLibro.setValue(self.libro.isbn, forKey: "isbn")
+        nuevoLibro.setValue(self.libro.titulo, forKey: "titulo")
+        nuevoLibro.setValue(self.libro.autores, forKey: "autores")
+        nuevoLibro.setValue(UIImagePNGRepresentation(self.libro.portada), forKey: "portada")
+        do{
+            try contexto?.save()
+        }catch{
+            
+        }
+    }
     
     func alert(message : String){
         let alertController = UIAlertController(title: "Openlibrary Alert", message: message, preferredStyle: .Alert)

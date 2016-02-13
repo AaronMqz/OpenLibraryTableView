@@ -7,60 +7,98 @@
 //
 
 import UIKit
+import CoreData
 
+var libro:Libro!
 var libros:[Libro]!
-
+var contexto = NSManagedObjectContext?()
 
 class ControladorTablaLibros: UITableViewController {
 
-
+    var datoslibro = NSEntityDescription()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        cargarDatos()
     }
     
     override func viewDidAppear(animated: Bool) {
          self.tableView.reloadData()
     }
 
-    // MARK: - Table view data source
-
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         if libros == nil{
             return 0
         }
         else{
             return libros.count
         }
-        
     }
 
-    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("celdaNombreLibro", forIndexPath: indexPath)
-
-        // Configure the cell...
         cell.textLabel?.text = libros[indexPath.row].titulo
         return cell
     }
     
-
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        if editingStyle == .Delete{
+            eliminarDatos(indexPath.row)
+        }
+    }
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        
         if let detalleLibro = segue.destinationViewController as? ControladorDetalleLibro {
             detalleLibro.libroDetalle = libros[(self.tableView.indexPathForSelectedRow?.row)!]
         }
-
     }
+    
+
+    func cargarDatos(){
+        contexto = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+        datoslibro = NSEntityDescription.entityForName("Libro", inManagedObjectContext: contexto!)!
+        let peticion = datoslibro.managedObjectModel.fetchRequestTemplateForName("obtenerListaLibros")
+        
+        do{
+            let datos = try contexto?.executeFetchRequest(peticion!)
+            for dato in datos!{
+                libro = Libro()
+                libro.titulo = dato.valueForKey("titulo") as! String
+                libro.isbn  = dato.valueForKey("isbn") as! String
+                libro.autores = dato.valueForKey("autores") as! String
+                libro.portada = UIImage(data: dato.valueForKey("portada") as! NSData)
+                if libros == nil{
+                     libros = [libro];
+                }else{
+                    libros.append(libro)
+                }
+               
+            }
+        }catch{
+            
+        }
+    }
+    
+    func eliminarDatos(index: Int){
+        let peticion = datoslibro.managedObjectModel.fetchRequestTemplateForName("obtenerListaLibros")
+         do{
+            let datos = try contexto?.executeFetchRequest(peticion!)
+            contexto?.deleteObject(datos![index] as! NSManagedObject)
+            do{
+                try contexto?.save()
+                libros.removeAtIndex(index)
+                self.tableView.reloadData()
+            }catch{
+                
+            }
+         }catch{
+            
+        }
+    }
+    
     
 }
